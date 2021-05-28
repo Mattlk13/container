@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpel:if xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+	<bpel:condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0">
+		<![CDATA[$xpath1Expr]]>
+	</bpel:condition>
+	<bpel:throw xmlns:$faultPrefix="$faultNamespace" faultName="$faultPrefix:$faultLocalName" faulVariable="$faultVariable"/>
+</bpel:if>

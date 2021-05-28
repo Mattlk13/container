@@ -1,35 +1,44 @@
 
 # OpenTOSCA Container - TOSCA Runtime
 
-[![Build Status](https://travis-ci.org/OpenTOSCA/container.svg?branch=master)](https://travis-ci.org/OpenTOSCA/container)
+[![Java CI with Maven](https://github.com/OpenTOSCA/container/actions/workflows/maven.yml/badge.svg)](https://github.com/OpenTOSCA/container/actions/workflows/maven.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Part of the [OpenTOSCA Ecosystem](http://www.opentosca.org)
 
 ## Build
 
-1. Run `mvn package` inside the root folder.
-2. When completed, the built product can be found in `org.opentosca.container.product/target/products`.
+1. Run `git update-index --assume-unchanged ./org.opentosca.container.core/src/main/resources/application.properties`
+   to ignore custom configuration changes inside the application.properties.
+2. Update [application.properties](org.opentosca.container.core/src/main/resources/application.properties) and
+   replace `localhost` with your external IP address, e.g., `192.168.1.100`.
+3. Run `mvn package` inside the root folder.
+4. Afterwards, the [OpenTOSCA-container.war](org.opentosca.container.war/target/OpenTOSCA-container.war)
+   can be deployed using a tomcat webserver.
 
+## Setup in IntelliJ
+
+1. Open the project using `File` > `Open` and navigate to the container folder.
+2. Right click the [pom.xml](pom.xml) and select `Add as Maven project`.
+3. Run the `Container` run configuration.
 
 ## Setup in Eclipse
-- Make sure to use the IAAS code style configuration (see [IAAS Code Style Configuration](docs/codestyle/Readme.md))
-- After checkout, import the project to Eclipse (on the root directory) and select all found projects.
-  - File > Import... > Maven > Existing Maven Projects > Next
-  - Select appropriate Root Directory
-  - Select all projects
-  - OK
-- When Eclipse asks to install the Tycho Configurators, hit Yes/Okay/Install (be sure that `m2e` and it's repositories are known to your Eclipse).
-- Then, in the (sub-)project `target-definition` open the file `target-definition.target` and click `Set as Target Platform` (top right; `Reload Target Platform` for newer Eclipse versions).
-- To start the container, in (sub-)project `org.opentosca.container.product` open the `*.product` file and run the application.
 
+1. Import project via `Import existing maven projects..`
+2. Add created war file of project `org.opentosca.container.war` to suitable server configured within your eclipse, e.g., Tomcat
+3. (AdditionalInfo) Usually the application runs on port 1337 and without a prefix in the path -> change port of tomcat to 1337 and remove the path of the added WAR project
 
-## Haftungsausschluss
+## Run via SpringBoot
 
-Dies ist ein Forschungsprototyp.
-Die Haftung für entgangenen Gewinn, Produktionsausfall, Betriebsunterbrechung, entgangene Nutzungen, Verlust von Daten und Informationen, Finanzierungsaufwendungen sowie sonstige Vermögens- und Folgeschäden ist, außer in Fällen von grober Fahrlässigkeit, Vorsatz und Personenschäden, ausgeschlossen.
+1. Run `mvn install` in root of project
+2. Go to directory `org.opentosca.container.war` and run `mvn spring-boot:run` and the runtime should be available under localhost:1337
 
 ## Disclaimer of Warranty
 
 Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
 You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
+
+## Haftungsausschluss
+
+Dies ist ein Forschungsprototyp.
+Die Haftung für entgangenen Gewinn, Produktionsausfall, Betriebsunterbrechung, entgangene Nutzungen, Verlust von Daten und Informationen, Finanzierungsaufwendungen sowie sonstige Vermögens- und Folgeschäden ist, außer in Fällen von grober Fahrlässigkeit, Vorsatz und Personenschäden, ausgeschlossen.

@@ -1,0 +1,131 @@
+package org.opentosca.planbuilder.type.plugin.patternbased.bpel;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.opentosca.container.core.convention.Types;
+import org.opentosca.container.core.convention.Utils;
+import org.opentosca.planbuilder.core.bpel.context.BPELPlanContext;
+import org.opentosca.planbuilder.model.tosca.AbstractInterface;
+import org.opentosca.planbuilder.model.tosca.AbstractNodeTemplate;
+import org.opentosca.planbuilder.model.tosca.AbstractOperation;
+import org.opentosca.planbuilder.model.tosca.AbstractRelationshipTemplate;
+import org.w3c.dom.Element;
+
+public class RemoteManagerPatternBasedHandler extends PatternBasedHandler {
+
+    public boolean handleCreate(final BPELPlanContext context, final AbstractNodeTemplate nodeTemplate, Element elementToAppendTo) {
+        final AbstractInterface iface = getRemoteManagerInterface(nodeTemplate);
+        final AbstractOperation createOperation = getRemoteManagerInstallOperation(nodeTemplate);
+
+        final Set<AbstractNodeTemplate> nodesForMatching = calculateNodesForMatching(nodeTemplate);
+
+        // For the future we should think about integrating the fileupload plugin into the pattern plugin or refactoring it, cause:
+        // The fileupload plugin implicitly works according to the lifecycle/container pattern as in that case it can just traverse the the topology downward along the hostedOn relations.
+        // The remote manager pattern uses a dependsOn relation to a managing node which used to find the operation for uploading files/DAs
+        AbstractNodeTemplate infraNode = this.getRemoteManagerNode(nodeTemplate);
+        nodeTemplate.getDeploymentArtifacts().forEach(da -> da.getArtifactRef().getArtifactReferences().forEach(ref -> this.invokeArtifactReferenceUpload(context, ref, infraNode)));
+
+        return invokeWithMatching(context, nodeTemplate, iface, createOperation, nodesForMatching, elementToAppendTo);
+    }
+
+    public boolean isProvisionableByRemoteManagerPattern(AbstractNodeTemplate node) {
+
+        if (this.getRemoteManagerInstallOperation(node) == null) {
+            return false;
+        }
+
+        return this.getRemoteManagerNode(node) != null;
+    }
+
+    public Set<AbstractNodeTemplate> getNodeDependencies(AbstractNodeTemplate nodeTemplate) {
+        return this.calculateNodesForMatching(nodeTemplate);
+    }
+
+    private Set<AbstractNodeTemplate> calculateNodesForMatching(final AbstractNodeTemplate nodeTemplate) {
+        final Set<AbstractNodeTemplate> nodesForMatching = new HashSet<>();
+        nodesForMatching.add(nodeTemplate);
+
+        AbstractNodeTemplate mngrNode = getRemoteManagerNode(nodeTemplate);
+
+        for (AbstractRelationshipTemplate relation : nodeTemplate.getOutgoingRelations()) {
+            nodesForMatching.add(relation.getTarget());
+        }
+
+        nodesForMatching.add(mngrNode);
+
+        return nodesForMatching;
+    }
+
+    private AbstractNodeTemplate getRemoteManagerNode(AbstractNodeTemplate node) {
+
+        for (AbstractRelationshipTemplate relation : node.getOutgoingRelations()) {
+            if (relation.getType().equals(Types.dependsOnRelationType)) {
+                AbstractNodeTemplate remoteMngrNode = relation.getTarget();
+                if (Utils.isSupportedOSNodeType(remoteMngrNode.getType().getId())) {
+                    return remoteMngrNode;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private AbstractOperation getRemoteManagerInstallOperation(AbstractNodeTemplate node) {
+        AbstractInterface iface = this.getRemoteManagerInterface(node);
+        if (iface != null) {
+            for (AbstractOperation op : iface.getOperations()) {
+                if (op.getName().equals("install")) {
+                    return op;
+                }
+            }
+        }
+        return null;
+    }
+
+    private AbstractOperation getRemoteManagerResetOperation(AbstractNodeTemplate node) {
+        AbstractInterface iface = this.getRemoteManagerInterface(node);
+        if (iface != null) {
+            for (AbstractOperation op : iface.getOperations()) {
+                if (op.getName().equals("reset")) {
+                    return op;
+                }
+            }
+        }
+        return null;
+    }
+
+    private AbstractInterface getRemoteManagerInterface(AbstractNodeTemplate node) {
+        for (AbstractInterface iface : node.getType().getInterfaces()) {
+            if (iface.getName().equals("http://opentosca.org/interfaces/pattern/remotemanager")) {
+                return iface;
+            }
+        }
+        return null;
+    }
+
+    public boolean isDeprovisionableByRemoteManagerPattern(AbstractNodeTemplate nodeTemplate) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public Collection<? extends AbstractNodeTemplate> getMatchedNodesForDeprovisioning(AbstractNodeTemplate nodeTemplate) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public boolean handleTerminate(BPELPlanContext templateContext, AbstractNodeTemplate nodeTemplate,
+                                   Element provisioningPhaseElement) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public AbstractOperation getRemoteManagerPatternResetMethod(AbstractNodeTemplate nodeTemplate) {
+        return this.getRemoteManagerResetOperation(nodeTemplate);
+    }
+
+    public AbstractOperation getRemoteManagerPatternInstallMethod(AbstractNodeTemplate nodeTemplate) {
+        return this.getRemoteManagerInstallOperation(nodeTemplate);
+    }
+}

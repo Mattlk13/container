@@ -1,0 +1,28 @@
+<bpel:assign xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+	validate="no" name="$assignName">
+	<bpel:copy>
+		<bpel:from variable="$ServiceInstanceResponseVarName">
+            <bpel:query queryLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"
+            ><![CDATA[string(//*[local-name()='url']/text())]]></bpel:query>
+		</bpel:from>
+		<bpel:to variable="$ServiceInstanceURLVarName"></bpel:to>
+	</bpel:copy>
+	<bpel:copy>
+		<bpel:from variable="$ServiceInstanceURLVarName">
+			<bpel:query queryLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"><![CDATA[string(codepoints-to-string(reverse(string-to-codepoints(substring-before(codepoints-to-string(reverse(string-to-codepoints($$ServiceInstanceURLVarName))), '/')))))]]></bpel:query>
+		</bpel:from>
+		<bpel:to variable="$ServiceInstanceIDVarName"></bpel:to>
+	</bpel:copy>
+	<bpel:copy>
+		<bpel:from variable="$serviceTemplateInstancesURLVar">
+			<bpel:query queryLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"><![CDATA[string(replace($$serviceTemplateInstancesURLVar, '/instances', ''))]]></bpel:query>
+		</bpel:from>
+		<bpel:to variable="$serviceTemplateURLVarName"></bpel:to>
+	</bpel:copy>
+	<bpel:copy>
+		<bpel:from variable="$serviceTemplateURLVarName">
+			<bpel:query queryLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath2.0"><![CDATA[string(concat($$serviceTemplateURLVarName, '/buildplans/', '$planName', '/instances/', $$ServiceInstanceCorrelationID))]]></bpel:query>
+		</bpel:from>
+		<bpel:to variable="$planInstanceURL"></bpel:to>
+	</bpel:copy>
+</bpel:assign>
